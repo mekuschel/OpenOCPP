@@ -1,0 +1,5 @@
+{
+    "cmake.sourceDirectory": "C:/dev/ShoreOCPP/third_party/OpenOCPP/demo-esp32",
+    "idf.currentSetup": "C:\\esp\\v5.5.6\\esp-idf",
+    "idf.port": "COM30"
+}

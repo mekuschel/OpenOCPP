@@ -1,0 +1,10 @@
+# ShoreOCPP: extra settings applied automatically when the target is esp32s3
+# (ESP-IDF merges sdkconfig.defaults + sdkconfig.defaults.<target>).
+# Board: ESP32-S3-DevKitC-1 with ESP32-S3-WROOM-1-N16R8 (16 MB flash, 8 MB octal PSRAM).
+
+# 16 MB flash
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+
+# 8 MB octal PSRAM, initialised at boot and added to the heap
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
