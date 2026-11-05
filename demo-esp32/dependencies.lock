@@ -28,5 +28,5 @@ direct_dependencies:
 - espressif/zlib
 - idf
 manifest_hash: 115b87000fdb1fc149cf270df267a604f2c5a46b6d9a0c7b042451668945afa3
-target: esp32
+target: esp32s3
 version: 2.0.0

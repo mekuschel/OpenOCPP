@@ -445,7 +445,10 @@ namespace chargelab {
             // specify a behaviour when there's a pending request that has not started a transaction yet.
             std::optional<ocpp2_0::EVSEType> evse {};
             if (req.evseId.has_value())
-                evse->id = req.evseId.value();
+                // changed 3Nov26  
+                // every request was landing in the same slot so each new one overwrites the last
+                // evse->id = req.evseId.value();
+                evse = ocpp2_0::EVSEType {req.evseId.value()};
 
             pending_start_req_[evse] = transaction_module2_0::PendingStartRequest {platform_, req};
             return ocpp2_0::RequestStartTransactionResponse{ocpp2_0::RequestStartStopStatusEnumType::kAccepted};
