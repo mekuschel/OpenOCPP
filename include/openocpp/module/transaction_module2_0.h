@@ -693,6 +693,24 @@ namespace chargelab {
             return response;
         }
 
+        // ShoreOCPP patch 0002: lets the station end a transaction whose paid time ran out (the site
+        // controller's own countdown). Same path as a remote stop, with trigger and reason TimeLimitReached.
+        // Returns false if no transaction is running on that EVSE/connector.
+        bool stopTransactionTimeLimit(ocpp2_0::EVSEType const& evse) {
+            if (!active_transactions_[evse].has_value())
+                return false;
+
+            CHARGELAB_LOG_MESSAGE(info) << "Stopping transaction (TimeLimitReached) - transaction ID: "
+                                        << active_transactions_[evse]->transaction_id;
+            stopTransaction(
+                    evse,
+                    ocpp2_0::TriggerReasonEnumType::kTimeLimitReached,
+                    ocpp2_0::ReasonEnumType::kTimeLimitReached,
+                    std::nullopt
+            );
+            return true;
+        }
+
     private:
         chargelab::transaction_module2_0::TransactionContainer& startTransaction(
                 std::optional<ocpp2_0::EVSEType> evse,
