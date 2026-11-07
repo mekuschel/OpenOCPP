@@ -1,6 +1,7 @@
 #ifndef CHARGELAB_OPEN_FIRMWARE_SETTINGS_H
 #define CHARGELAB_OPEN_FIRMWARE_SETTINGS_H
 
+#include "openocpp/common/redact.h"
 #include "openocpp/helpers/optional.h"
 #include "openocpp/helpers/string.h"
 #include "openocpp/helpers/json.h"
@@ -3582,13 +3583,23 @@ namespace chargelab {
                             if (p->load(record.value))
                                 p->setModified(false);
 
-                            CHARGELAB_LOG_MESSAGE(info) << "Load settings: " << record;
+                            // ShoreOCPP patch 0003: never log a secret's value (write-only settings
+                            // such as WifiPassword / BasicAuthPassword, or anything named like one)
+                            if (!p->getConfig().isAllowOcppRead() || redact::mentionsSecret(record.key)) {
+                                CHARGELAB_LOG_MESSAGE(info) << "Load settings: " << record.key << " = *** (hidden)";
+                            } else {
+                                CHARGELAB_LOG_MESSAGE(info) << "Load settings: " << record;
+                            }
                             loaded_setting = true;
                             break;
                         }
 
                         if (!loaded_setting) {
-                            CHARGELAB_LOG_MESSAGE(warning) << "Unrecognised entry in saved settings: " << record;
+                            if (redact::mentionsSecret(record.key)) {
+                                CHARGELAB_LOG_MESSAGE(warning) << "Unrecognised entry in saved settings: " << record.key << " = *** (hidden)";
+                            } else {
+                                CHARGELAB_LOG_MESSAGE(warning) << "Unrecognised entry in saved settings: " << record;
+                            }
                         }
                     }
 

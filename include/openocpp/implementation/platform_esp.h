@@ -1,6 +1,7 @@
 #ifndef CHARGELAB_OPEN_FIRMWARE_PLATFORM_ESP_H
 #define CHARGELAB_OPEN_FIRMWARE_PLATFORM_ESP_H
 
+#include "openocpp/common/redact.h"
 #include "openocpp/common/settings.h"
 #include "openocpp/helpers/chrono.h"
 #include "openocpp/interface/component/system_interface.h"
@@ -539,7 +540,7 @@ namespace chargelab {
                     esp_websocket_client_send_fin(client_, kSendTimeoutMillis/portTICK_PERIOD_MS);
                 } else if(index_ > 0) {
                     esp_websocket_client_send_text(client_, buffer_.data(), index_, kSendTimeoutMillis/portTICK_PERIOD_MS);
-                    CHARGELAB_LOG_MESSAGE(info) << "Sending message: " << std::string{buffer_.data(), index_};
+                    CHARGELAB_LOG_MESSAGE(info) << "Sending message: " << redact::message(std::string_view{buffer_.data(), index_});
                 }
             }
 
@@ -577,7 +578,7 @@ namespace chargelab {
                 int result;
                 if (!fragmented_) {
                     result = esp_websocket_client_send_text_partial(client_, buffer_.data(), index_, kSendTimeoutMillis/portTICK_PERIOD_MS);
-                    CHARGELAB_LOG_MESSAGE(info) << "Sending message: " << std::string{buffer_.data(), index_};
+                    CHARGELAB_LOG_MESSAGE(info) << "Sending message: " << redact::message(std::string_view{buffer_.data(), index_});
                 } else {
                     result = esp_websocket_client_send_cont_msg(client_, buffer_.data(), index_, kSendTimeoutMillis/portTICK_PERIOD_MS);
                     CHARGELAB_LOG_MESSAGE(info) << "Sending fragmented message: " << std::string{buffer_.data(), index_};
@@ -831,10 +832,10 @@ namespace chargelab {
                 std::lock_guard<std::mutex> lock(mutex_);
 
                 CHARGELAB_TRY {
-                    CHARGELAB_LOG_MESSAGE(info) << "Received message: " << buffer_;
+                    CHARGELAB_LOG_MESSAGE(info) << "Received message: " << redact::message(buffer_);
                     received_messages_.pushBack(buffer_);
                 } CHARGELAB_CATCH {
-                    CHARGELAB_LOG_MESSAGE(warning) << "Failed parsing websocket message: " << buffer_;
+                    CHARGELAB_LOG_MESSAGE(warning) << "Failed parsing websocket message: " << redact::message(buffer_);
                 }
 
                 clearBuffer();
