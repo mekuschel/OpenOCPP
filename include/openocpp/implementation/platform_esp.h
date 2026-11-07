@@ -581,7 +581,8 @@ namespace chargelab {
                     CHARGELAB_LOG_MESSAGE(info) << "Sending message: " << redact::message(std::string_view{buffer_.data(), index_});
                 } else {
                     result = esp_websocket_client_send_cont_msg(client_, buffer_.data(), index_, kSendTimeoutMillis/portTICK_PERIOD_MS);
-                    CHARGELAB_LOG_MESSAGE(info) << "Sending fragmented message: " << std::string{buffer_.data(), index_};
+                    // ShoreOCPP patch 0004: a piece of a message cannot be checked for secrets (a word may be split): size only
+                    CHARGELAB_LOG_MESSAGE(info) << "Sending fragmented message: (continued, " << index_ << " bytes)";
                 }
 
                 if (result != index_) {

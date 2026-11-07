@@ -12,8 +12,9 @@
 namespace chargelab::redact {
     // True if the text mentions something secret: a password, key, token...
     inline bool mentionsSecret(std::string_view text) {
+        // (not "token": OCPP's idToken is a driver's ID, not a secret, and is in most transaction messages)
         static constexpr std::string_view kWords[] = {
-                "password", "passwd", "passphrase", "secret", "token", "authorizationkey", "privatekey", "psk"
+                "password", "passwd", "passphrase", "secret", "authorizationkey", "privatekey", "psk"
         };
         std::string lower;
         lower.reserve(text.size());
