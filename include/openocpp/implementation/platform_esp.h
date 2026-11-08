@@ -662,7 +662,10 @@ namespace chargelab {
 
                 esp_websocket_client_config_t config = {};
                 config.uri = uri_.c_str();
-                config.host = uri_parts_.host.c_str();
+                // ShoreOCPP patch 0006: no config.host. The URI already carries the host; esp_websocket_client
+                // (1.8.0) stores the host from the URI and then strdup()s config.host over it without freeing the
+                // first copy, leaking one string per client, i.e. per reconnect cycle (bench 2026-11-08: 24 x 96
+                // bytes of internal RAM in 30 min without the CSMS, about 4 KB an hour).
                 config.path = uri_parts_.path.c_str();
                 config.port = uri_parts_.port;
                 config.subprotocol = subprotocol_.c_str();
