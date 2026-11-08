@@ -615,8 +615,15 @@ namespace chargelab {
 
         public:
             virtual ~WebsocketImpl() {
-                if (!running_)
+                if (!running_) {
+                    // ShoreOCPP patch 0005: the client's own task has already ended (WEBSOCKET_EVENT_FINISH), but its
+                    // resources (buffers, transport, event loop, locks) are only freed by destroy. Returning here
+                    // leaked a client on every reconnect cycle: internal RAM ran out after a night without the CSMS
+                    // (bench 2026-11-08). With the task stopped, destroy only frees memory.
+                    if (esp_websocket_client_destroy(client_) != ESP_OK)
+                        CHARGELAB_LOG_MESSAGE(warning) << "Failed destroying finished websocket client";
                     return;
+                }
 
                 CHARGELAB_LOG_MESSAGE(info) << "Stopping websocket client...";
                 if (esp_websocket_client_is_connected(client_)) {
@@ -660,6 +667,9 @@ namespace chargelab {
                 config.port = uri_parts_.port;
                 config.subprotocol = subprotocol_.c_str();
                 config.ping_interval_sec = 10;
+                // ShoreOCPP patch 0005: notice a dead CSMS link after 30 s instead of the library's 120 s default
+                // (bench 2026-11-08: the station showed "connected" for 2 minutes after the CSMS was gone)
+                config.pingpong_timeout_sec = 30;
                 config.crt_bundle_attach = certs::attachCustomCrtBundle;
                 config.username = basic_auth_username_.c_str();
                 config.password = basic_auth_password_.c_str();
