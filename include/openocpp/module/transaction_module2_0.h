@@ -711,6 +711,20 @@ namespace chargelab {
             return true;
         }
 
+        // ShoreOCPP patch 0009: lets the station end a transaction it cannot serve, for example a remote start
+        // whose port never switched on (pedestal offline, start refused). Trigger AbnormalCondition with the given
+        // stoppedReason. Returns false if no transaction is running on that EVSE/connector.
+        bool stopTransactionAbnormal(ocpp2_0::EVSEType const& evse, ocpp2_0::ReasonEnumType const& reason) {
+            auto const it = active_transactions_.find(evse);
+            if (it == active_transactions_.end() || !it->second.has_value())
+                return false;
+
+            CHARGELAB_LOG_MESSAGE(info) << "Stopping transaction (AbnormalCondition, " << reason.to_string()
+                                        << ") - transaction ID: " << it->second->transaction_id;
+            stopTransaction(evse, ocpp2_0::TriggerReasonEnumType::kAbnormalCondition, reason, std::nullopt);
+            return true;
+        }
+
     private:
         chargelab::transaction_module2_0::TransactionContainer& startTransaction(
                 std::optional<ocpp2_0::EVSEType> evse,
