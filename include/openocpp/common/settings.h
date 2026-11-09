@@ -63,6 +63,13 @@ namespace chargelab {
         };
 
         inline bool isValidMeasurandList(std::string const& text) {
+            // ShoreOCPP patch 0008: an empty list (no measurands) is valid. MeterValuesAlignedData and
+            // StopTxnSampledData default to "", which this check rejected: loading the saved "" failed at every
+            // start, the setting stayed "modified" and settings.json was rewritten a few seconds after each boot.
+            // It also refused a CSMS setting the list to empty.
+            if (text.empty())
+                return true;
+
             bool result = true;
             string::SplitVisitor(text, ",", [&](std::string const& value) {
                 if (ocpp2_0::MeasurandEnumType::from_string(value) == ocpp2_0::MeasurandEnumType::kValueNotFoundInEnum)
