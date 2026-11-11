@@ -674,8 +674,13 @@ namespace chargelab {
                 // (bench 2026-11-08: the station showed "connected" for 2 minutes after the CSMS was gone)
                 config.pingpong_timeout_sec = 30;
                 config.crt_bundle_attach = certs::attachCustomCrtBundle;
-                config.username = basic_auth_username_.c_str();
-                config.password = basic_auth_password_.c_str();
+                // ShoreOCPP patch 0010: send basic authentication only when there is a password (security profile
+                // 1/2). With an empty one esp_websocket_client still sent "Authorization: Basic <id>:" and OpConnect's
+                // server (websocket-sharp) refused the handshake with 501 (bench 2026-11-11).
+                if (!basic_auth_password_.empty()) {
+                    config.username = basic_auth_username_.c_str();
+                    config.password = basic_auth_password_.c_str();
+                }
                 config.reconnect_timeout_ms = settings_->NetworkConnectionRetryBackOffWaitMinimum.getValue() * 1000;
 
                 // Note: increasing from 4k default (WEBSOCKET_TASK_STACK) due to stack overflow verifying custom
